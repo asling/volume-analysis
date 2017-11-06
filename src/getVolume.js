@@ -1,8 +1,8 @@
 const request = require("./request");
 const chalk = require('chalk');
 const year = 2017;
-const daysGap = 1;
-const diffGap = 3;
+// const daysGap = 3;
+// const diffGap = 5;
 const threshold = 0.5;
 const match = String.prototype.match;
 let config = {
@@ -37,10 +37,10 @@ function getLastDate(){
 	const todayLeaveTime = todayTime + 54000000;
 	let outputTime;
 	if(date.getTime() > todayLeaveTime){
-		// apiTimeStr = `${trueYear}${trueMonth}${trueDate}`;
+		apiTimeStr = `${trueYear}${trueMonth}${trueDate}`;
 		outputTime = `${trueMonth}/${trueDate}/${trueYear}`;
 	}else{
-		// apiTimeStr = `${trueYear}${trueMonth}${trueDate-1}`;
+		apiTimeStr = `${trueYear}${trueMonth}${trueDate-1}`;
 		outputTime = `${trueMonth}/${trueDate-1}/${trueYear}`;
 	}
 	return outputTime;
@@ -56,120 +56,140 @@ function checkDateValidate(data,datestr){
 }
 
 function calDiffAvgVolume(data,lastDate){
-	let sum = 0, avg;
-	const date = new Date(lastDate).getTime();
-	const onedayTime = 24*3600*1000;
-	// const dateMargin = date - daysGap* onedayTime;
-	const dateMargin = getDateMargin();
-	// console.log("lastDate",lastDate);
-	// console.log("dateMargin",new Date(dateMargin));
-	let i = k = 1,tmpTimeStr,timeStr,curItem;
-	// let dateMargin = date;
-	// for(var i = 0; i< diffGap; i++){
-	// 	let tmpTimeStr = dateMargin- i* onedayTime;
-	// 	let timeStr = dateFormat(new Date(tmpTimeStr));
-	// 	console.log("i",i);
-	// 	while(!checkDateValidate(data,timeStr)){
-	// 		tmpTimeStr = tmpTimeStr- onedayTime;
-	// 		timeStr = dateFormat(new Date(tmpTimeStr));
-	// 		console.log("tmpTimeStr",tmpTimeStr);
-	// 	}
-		
-	// 	let curItem = data[timeStr];
-	// 	if(curItem){
-	// 		sum = sum + parseFloat(curItem[5]);
-	// 	}
-	// }
+	return function(daysGap,diffGap){
+		// console.log(2222);
+		let sum = 0, avg, sumToPrice = 0;
+		const date = new Date(lastDate).getTime();
+		const onedayTime = 24*3600*1000;
+		// const dateMargin = date - daysGap* onedayTime;
+		const dateMargin = getDateMargin();
+		// console.log("lastDate",lastDate);
+		// console.log("dateMargin",new Date(dateMargin));
+		let i = k = 1,tmpTimeStr,timeStr,curItem;
+		// let dateMargin = date;
+		// for(var i = 0; i< diffGap; i++){
+		// 	let tmpTimeStr = dateMargin- i* onedayTime;
+		// 	let timeStr = dateFormat(new Date(tmpTimeStr));
+		// 	console.log("i",i);
+		// 	while(!checkDateValidate(data,timeStr)){
+		// 		tmpTimeStr = tmpTimeStr- onedayTime;
+		// 		timeStr = dateFormat(new Date(tmpTimeStr));
+		// 		console.log("tmpTimeStr",tmpTimeStr);
+		// 	}
+			
+		// 	let curItem = data[timeStr];
+		// 	if(curItem){
+		// 		sum = sum + parseFloat(curItem[5]);
+		// 	}
+		// }
 
-	while(i <= diffGap){
-		tmpTimeStr = dateMargin- k* onedayTime;
-		k++;
-		// console.log("k2",k);
-		// console.log("i2",i);
-		timeStr = dateFormat(new Date(tmpTimeStr));
-		while(!checkDateValidate(data,timeStr)){
+		while(i <= diffGap){
 			tmpTimeStr = dateMargin- k* onedayTime;
-			timeStr = dateFormat(new Date(tmpTimeStr));
-			// console.log("new Date(tmpTimeStr)",new Date(tmpTimeStr));
-			// console.log("timeStr1",timeStr);
-			// process.exit(1);
 			k++;
-			if(k >= 365) break;
-		}
-		// console.log("timeStr2",timeStr);
-		curItem = data[timeStr];
-		// console.log("curItem",curItem);
-		// console.log("------");
-		if(curItem){
-			sum = sum + parseFloat(curItem[5]);
-		}
-		
-		i++;
-
-	}
-
-	function getDateMargin(){
-		let curDay = 0;
-		let i = 0;
-		let curDate = date;
-		let timeoutNum = 360;
-		while(!checkDateValidate(data,dateFormat(new Date(curDate)))){
-			i++;
-			curDate = date - i * onedayTime;
-			if(i > timeoutNum) curDate = date;
-
-			// console.log('curDate',curDate);
-		}
-		i = 0;
-		while(curDay < daysGap && i <= timeoutNum){
-			curDate = date - i * onedayTime;
-			i++;
-			if(checkDateValidate(data,dateFormat(new Date(curDate)))){
-				curDay++;
+			// console.log("k2",k);
+			// console.log("i2",i);
+			timeStr = dateFormat(new Date(tmpTimeStr));
+			while(!checkDateValidate(data,timeStr)){
+				tmpTimeStr = dateMargin- k* onedayTime;
+				timeStr = dateFormat(new Date(tmpTimeStr));
+				// console.log("new Date(tmpTimeStr)",new Date(tmpTimeStr));
+				// console.log("kk",k);
+				// process.exit(1);
+				k++;
+				if(k >= 365) break;
 			}
-			// console.log('i',i);
-			// console.log("curDay",curDay);
+			// console.log("timeStr2",timeStr);
+			curItem = data[timeStr];
+			// console.log("curItem",curItem);
+			// console.log("------");
+			if(curItem){
+				sum = sum + parseFloat(curItem[5]);
+				sumToPrice = parseFloat(curItem[6]) > 0 ?  sumToPrice + parseFloat(curItem[5]) : sumToPrice - parseFloat(curItem[5]);
+				
+			}
+			
+			i++;
+
 		}
-		return curDate;
+
+		function getDateMargin(){
+			let curDay = 0;
+			let i = 0;
+			let curDate = date;
+			let timeoutNum = 360;
+			while(!checkDateValidate(data,dateFormat(new Date(curDate))) && i <= timeoutNum){
+				i++;
+				curDate = date - i * onedayTime;
+				if(i > timeoutNum) curDate = date;
+
+				// console.log('curDate',curDate);
+			}
+			i = 0;
+			while(curDay < daysGap && i <= timeoutNum){
+				curDate = date - i * onedayTime;
+				i++;
+				if(checkDateValidate(data,dateFormat(new Date(curDate)))){
+					curDay++;
+				}
+				// console.log('i',i);
+				// console.log("curDay",curDay);
+			}
+			return curDate;
+		}
+
+		// console.log('(sum / diffGap).toFixed(2)',(sum / diffGap).toFixed(2));
+		return {
+			sum:(sum / diffGap).toFixed(2),
+			diffSum: sumToPrice,
+		};
+
 	}
-	// console.log('(sum / diffGap).toFixed(2)',(sum / diffGap).toFixed(2));
-	return (sum / diffGap).toFixed(2);
+	
 }
 
 function calLastAvgVolume(data, lastDate){
-	let sum = 0, avg;
-	const date = new Date(lastDate).getTime();
-	const onedayTime = 24*3600*1000;
-	let i = k = 0,tmpTimeStr,timeStr,curItem; 
-	while(i < daysGap){
-		tmpTimeStr = date- k* onedayTime;
-		k++;
-		// console.log("k1",k);
-		// console.log("i1",i);
-		timeStr = dateFormat(new Date(tmpTimeStr));
-		while(!checkDateValidate(data,timeStr)){
-			tmpTimeStr = tmpTimeStr- onedayTime;
-			timeStr = dateFormat(new Date(tmpTimeStr));
-			// console.log("new Date(tmpTimeStr)",new Date(tmpTimeStr));
-			// console.log("timeStr1",timeStr);
+	
+	return function(daysGap,diffGap){
+		let sum = 0, avg, sumToPrice = 0;
+		const date = new Date(lastDate).getTime();
+		const onedayTime = 24*3600*1000;
+		let i = k = 0,tmpTimeStr,timeStr,curItem; 
+		while(i < daysGap){
+			tmpTimeStr = date- k* onedayTime;
 			k++;
-			if(k >= 365) break;
-		}
-		curItem = data[timeStr];
-		// console.log("timeStr2",timeStr);
-		// console.log("curItem",curItem);
-		// console.log("------");
-		if(curItem){
-			sum = sum + parseFloat(curItem[5]);
-			console.log("curItem[5]",curItem[5]);
-			console.log("sum",sum);
-		}
-		i++;
+			// console.log("k1",k);
+			// console.log("i1",i);
+			timeStr = dateFormat(new Date(tmpTimeStr));
+			while(!checkDateValidate(data,timeStr)){
+				tmpTimeStr = tmpTimeStr- onedayTime;
+				timeStr = dateFormat(new Date(tmpTimeStr));
+				// console.log("new Date(tmpTimeStr)",new Date(tmpTimeStr));
+				// console.log("k",k);
+				k++;
+				if(k >= 365) break;
+			}
+			curItem = data[timeStr];
+			//@ [代码 开盘价 收盘价 最高价 最低价 成交量 涨跌幅度 ]
+			// console.log("timeStr2",timeStr);
+			// console.log("curItem",curItem);
+			// console.log("------");
+			if(curItem){
+				sum = sum + parseFloat(curItem[5]);
+				sumToPrice = parseFloat(curItem[6]) > 0 ?  sumToPrice + parseFloat(curItem[5]) : sumToPrice - parseFloat(curItem[5]);
+				console.log("curItem[5]",curItem[5]);
+				console.log("sum",sum);
+			}
+			i++;
+			// console.log('i',i);
 
+		}
+		// console.log('(sum / daysGap).toFixed(2)',(sum / daysGap).toFixed(2));
+		// console.log("daysGap",daysGap);
+		return {
+			sum:(sum / daysGap).toFixed(2),
+			lastSum: sumToPrice,
+		};
 	}
-	// console.log('sum',sum);
-	// console.log("daysGap",daysGap);
-	return (sum / daysGap).toFixed(2);
 }
 
 function getStockType(stockNum){
@@ -182,8 +202,12 @@ function getStockType(stockNum){
 	}
 }
 
-module.exports = function getVolume(stockNum = ""){
+
+
+module.exports = function getVolume(stockNum = "",inputObj){
 	const prePath = `/data/hs/kline/day/history/${year}`;
+	const daysGap = inputObj.daysGap;
+	const diffGap = inputObj.diffGap;
 	const stockType = getStockType(stockNum);
 	if(stockType === -1) return false;
 
@@ -191,22 +215,25 @@ module.exports = function getVolume(stockNum = ""){
 	console.log(config);
 
 	return request(config).then( v => {
-		// console.log(v);
-		
+
 		const json = JSON.parse(v);
 		const stockName = json.name;
 		const stockNum = json.symbol;
 		const stockData = json.data;
 		const stockMapper = prepareStocksMapper(stockData);
 		const lastDate = getLastDate();
-		const lastAvgVolume = calLastAvgVolume(stockMapper,lastDate);
-		const diffAvgVolume = calDiffAvgVolume(stockMapper, lastDate);
-		// console.log(chalk.cyan(`lastAvgVolume: ${lastAvgVolume}`));
-		// console.log(chalk.green(`diffAvgVolume: ${diffAvgVolume}`));
+		const lastAvgVolumeFun = calLastAvgVolume(stockMapper,lastDate);
+		const diffAvgVolumeFun = calDiffAvgVolume(stockMapper, lastDate);
+
+		const lastAvgVolume = lastAvgVolumeFun(daysGap,diffGap);
+		// console.log(11111);
+		const diffAvgVolume = diffAvgVolumeFun(daysGap,diffGap); 
+		console.log(chalk.cyan(`lastAvgVolume: ${JSON.stringify(lastAvgVolume)}`));
+		console.log(chalk.green(`diffAvgVolume: ${JSON.stringify(diffAvgVolume)}`));
 		return diff(lastAvgVolume,diffAvgVolume);
 
 		function diff(last, diff){
-			const result = diff / last;
+			const result = diff.sum > 0 && last.sum > 0 ? diff.sum / last.sum : 0 ;
 			// console.log({
 			// 	status: (result <= threshold && result > 0),
 			// 	stock: {
@@ -215,13 +242,13 @@ module.exports = function getVolume(stockNum = ""){
 			// 	}
 			// });
 			return {
-				status: (result <= threshold && result > 0),
+				status: (result <= threshold && result > 0 && last.lastSum + diff.diffSum > 0),
 				stock: {
 					name: stockName,
 					num: stockNum,
-					lastAvgVolume,
-					diffAvgVolume,
-
+					lastAvgVolume: last.sum,
+					diffAvgVolume: diff.sum,
+					osm: last.lastSum + diff.diffSum,
 				}
 			}
 		}
