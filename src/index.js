@@ -11,7 +11,7 @@ var xlsxBuilder = (data) => {
 		return [stock.name, stock.num, stock.lastAvgVolume, stock.diffAvgVolume];
 	})
 	const xlsxData = [
-		['股票名','股票代码','成交量1','成交量2'],
+		['股票名','股票代码','成交量1(last)','成交量2(diff)'],
 		...dataFormat,
 	]
 	var buffer = xlsx.build([{name: "filte-by-volumes", data: xlsxData}]);

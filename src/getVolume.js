@@ -1,9 +1,9 @@
 const request = require("./request");
 const chalk = require('chalk');
 const year = 2017;
-const daysGap = 3;
-const diffGap = 5;
-const threshold = 0.66;
+const daysGap = 1;
+const diffGap = 3;
+const threshold = 0.5;
 const match = String.prototype.match;
 let config = {
 	hostname: 'img1.money.126.net',
