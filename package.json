@@ -6,6 +6,7 @@
     "test": "npm run test:stocks && npm run test:volume",
     "getStocks": "node src/getStocks.js",
     "start": "node src/index.js",
+    "start:turnover": "node src/run-turnover.js",
     "start:item": "node src/item-analysis.js",
     "test:stocks": "node src/getStocks.test.js",
     "test:volume": "node src/getVolume.test.js",

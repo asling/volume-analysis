@@ -1,25 +1,24 @@
-const getVolume = require("./getTurnover.v1.test");
-const getStocks = require('./getStocks.mock');
+const getTurnover = require("./getTurnover.v1");
+const getStocks = require('./getStocks');
 const chalk = require("chalk");
 const fs = require('fs-extra');
 const xlsx = require('node-xlsx').default;
 const getInputObj = require("./var");
 const makeFileName = require("../util/makeFileName");
 
-
 var xlsxBuilder = (data) => {
 	const dataFormat = data.map( v =>{
 		const stock = v.stock;
 		const yesorno = v.status ? 1 : 0;
-		return [stock.name, stock.num, stock.lastAvgVolume, stock.diffAvgVolume, stock.osm, yesorno];
+		return [ stock.num, stock.lastAvuTurnover, stock.diffAvgTurnover, stock.percent, yesorno];
 	});
 
-	let fileName = `stocks${makeFileName()}.xlsx`;
+	let fileName = `turnover${makeFileName()}.xlsx`;
 	while(fs.ensureFileSync(fileName)){
-		fileName = `stocks${makeFileName()}.xlsx`;
+		fileName = `turnover${makeFileName()}.xlsx`;
 	}
 	const xlsxData = [
-		['股票名','股票代码','成交量1(last)','成交量2(diff)','动态成交量','是否满足'],
+		['股票代码','换手率1(last)','换手率2(diff)','比例','是否满足'],
 		...dataFormat,
 	]
 	var buffer = xlsx.build([{name: "filte-by-volumes", data: xlsxData}]);
@@ -30,14 +29,13 @@ var xlsxBuilder = (data) => {
 var gen = function* (){
 	const inputObj = yield getInputObj();
 	const stocks = yield getStocks();
-	// console.log(stocks);
 	// console.log(chalk.red('------------'));
 	const resultSelected = [];
 	if(stocks instanceof Array && stocks.length > 0){
 		for(let item of stocks){
 			console.log(item);
 			// console.log(chalk.red('-------'));
-			const tmpItem = yield getVolume(item,inputObj);
+			const tmpItem = yield getTurnover(item,inputObj);
 			console.log(tmpItem);
 			console.log(chalk.red('--------'));
 			if(tmpItem){
@@ -48,6 +46,14 @@ var gen = function* (){
 	}
 	return resultSelected;
 }
+
+// console.log(chalk.red(1));
+// let g = gen();
+// let step = g.next();
+// console.log(step);
+// while(!step.done){
+// 	step = g.next(step.value);
+// }
 
 //运行函数
 function run(gen){
