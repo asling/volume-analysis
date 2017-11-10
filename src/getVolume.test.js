@@ -1,2 +1,3 @@
 const getVolume = require("./getVolume");
-getVolume("600031")
+getVolume("603507",{daysGap:3,diffGap:5});
+
