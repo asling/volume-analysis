@@ -33,7 +33,6 @@ function prepareStocksMapper(data){
 }
 
 function dateFormat(dateObj){
-	// console.log("dateObj",dateObj);
 	const date = new Date(dateObj);
 	const trueYear = date.getFullYear();
 	const trueMonth = date.getMonth()+1 <= 9 ? '0'+(date.getMonth()+1) : date.getMonth()+1;
@@ -50,8 +49,8 @@ function reverseDate(dateStr){
 	return new Date(`${month}/${day}/${year}`);
 }
 
-function getLastDate(){
-	const date = new Date();
+function getLastDate(dateStr){
+	const date = new Date(dateStr);
 	const trueYear = date.getFullYear();
 	const trueMonth = date.getMonth()+1 <= 9 ? '0'+(date.getMonth()+1) : date.getMonth()+1;
 	const trueDate = date.getDate() <= 9 ? '0'+date.getDate() : date.getDate();
@@ -89,57 +88,42 @@ function getStockType(stockNum){
 	}
 }
 
-function calculate(data,days,range,date){
-	let i = 0,k = 0,j = 1;
+function calculate(data,range,date){
+	let i = 0,j = 1;
 	let curDate = dateFormat(date);
-	let nowData;
-
-	console.log("curDate1",curDate);
-	let tmp,lastDate,lastData,nowPrice,lastPrice,result = {prices:[],rocs:[]};
-	while(k < days){
+	let nowData = data[curDate];
+	let lastDate,lastData,nowPrice,lastPrice,result = {prices:null,rocs:null};
+	while(!nowData){
+		if(i++ >= 365) break;
+		curDate = dateFormat(new Date(reverseDate(curDate)).getTime() - 86400000);
 		nowData = data[curDate];
-		while(!nowData){
+	}
+	nowPrice = nowData ? parseFloat(nowData[2]).toFixed(2) : 0;
+	lastDate = curDate;
+	while(j <= range){
+		i = 0;
+		lastDate = dateFormat(new Date(reverseDate(lastDate)).getTime() - 86400000);
+		lastData = data[lastDate];
+		while(!lastData){
 			if(i++ >= 365) break;
-			curDate = dateFormat(new Date(reverseDate(curDate)).getTime() - 86400000);
-			nowData = data[curDate];
-		}
-		
-		nowPrice = nowData ? parseFloat(nowData[2]).toFixed(2) : 0;
-		// console.log("curDate2",curDate);
-		// console.log("nowData",nowData);
-		
-		j = 1;
-		lastDate = curDate;
-		while(j <= range){
-			i = 0;
 			lastDate = dateFormat(new Date(reverseDate(lastDate)).getTime() - 86400000);
 			lastData = data[lastDate];
-			
-			while(!lastData){
-				if(i++ >= 365) break;
-				lastDate = dateFormat(new Date(reverseDate(lastDate)).getTime() - 86400000);
-				lastData = data[lastDate];
-				// console.log("lastDate",lastDate);
+			// console.log("lastDate",lastDate);
 				// console.log("lastData",lastData);
-			}
-			j++;
 		}
-		
-		lastPrice = lastData ? parseFloat(lastData[2]).toFixed(2) : 0;
-		// console.log("nowPrice",nowPrice);
-		// console.log("lastPrice",lastPrice);
-		result.rocs.push((nowPrice*1000-lastPrice*1000)/1000);
-		result.prices.push(nowPrice);
-		curDate = dateFormat(new Date(reverseDate(curDate)).getTime() - 86400000);
-		k++;
+		j++;
 	}
+		
+	lastPrice = lastData ? parseFloat(lastData[2]).toFixed(2) : 0;
+	result.rocs = (nowPrice*1000-lastPrice*1000)/1000;
+	result.prices = nowPrice;
 	return result;
 }
 
 module.exports = function getVolume(stockNum = "",inputObj){
 	const prePath = `/data/hs/kline/day/history/${year}`;
-	const days = inputObj.days;
 	const range = inputObj.range;
+	const date = inputObj.date;
 	const stockType = getStockType(stockNum);
 	if(stockType === -1) return false;
 
@@ -153,39 +137,24 @@ module.exports = function getVolume(stockNum = "",inputObj){
 		const stockNum = json.symbol;
 		const stockData = json.data;
 		const stockMapper = prepareStocksMapper(stockData);
-		const lastDate = getLastDate();
-		const result = calculate(stockMapper,days,range,lastDate);
+		const lastDate = getLastDate(date);
+		const result = calculate(stockMapper,range,lastDate);
 		return diff(result);
 
 		function diff(result){
-			let flag1 = true,flag2 = true;
-			console.log(result);
-			result.prices.slice(1).reduce( (s,v) => {
-				flag1 = flag1 && (s > v);
-				return v;
-			},result.prices[0]);
-			result.rocs.slice(1).reduce( (s,v) => {
-				flag2 = flag2 && (s < v);
-				return v;
-			},result.rocs[0]);
-			// console.log({
-			// 	status: flag1 && flag2,
-			// 	stock: {
-			// 		name: stockName,
-			// 		num: stockNum,
-			// 		prices: result.prices,
-			// 		rocs: result.rocs,
-			// 	}
-			// });
-			return {
-				status: flag1 && flag2,
-				stock: {
+			console.log({
 					name: stockName,
 					num: stockNum,
 					prices: result.prices,
 					rocs: result.rocs,
+			});
+			return {
+					name: stockName,
+					num: stockNum,
+					prices: result.prices,
+					rocs: result.rocs,
+					date: lastDate,
 				}
-			}
 		}
 
 	}, (e) =>{

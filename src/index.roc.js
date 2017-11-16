@@ -33,7 +33,7 @@ var gen = function* (){
 	const resultSelected = [];
 	if(stocks instanceof Array && stocks.length > 0){
 		for(let item of stocks){
-			console.log(item);
+			// console.log(item);
 			// console.log(chalk.red('-------'));
 			const tmpItem = yield getROC(item,inputObj);
 			console.log(tmpItem);

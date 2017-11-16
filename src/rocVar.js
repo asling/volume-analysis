@@ -10,8 +10,8 @@ module.exports = function(){
 		message: 'input your range'
 	}]).then( v =>{
 		return {
-			daysGap: v.days || 3,
-			diffGap: v.range || 10,
+			days: v.days || 3,
+			range: v.range || 10,
 		}
 	});
 }
