@@ -1,3 +1,5 @@
 const stockService = require("./stock-service");
 
-console.log(stockService('000002',10));
+stockService('000002',10).then(v =>{
+	console.log('v',v);
+});

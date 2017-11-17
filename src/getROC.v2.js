@@ -147,6 +147,7 @@ module.exports = function getVolume(stockNum = "",inputObj){
 					num: stockNum,
 					prices: result.prices,
 					rocs: result.rocs,
+					date: lastDate,
 			});
 			return {
 					name: stockName,
