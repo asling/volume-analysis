@@ -1,14 +1,27 @@
 var upColor = '#00da3c';
 var downColor = '#ec0000';
 
+const queryObj = getURLParams(window.location.href);
+function random(){
+    let p;
+    if(Math.round(Math.random()) === 0){
+        p = -1;
+    }else{
+        p = 1;
+    }
+    return p * Math.round(Math.random()*5);
+}
 function splitData(rawData) {
     var categoryData = [];
     var values = [];
     var rocs = [];
     for (var i = 0; i < rawData.length; i++) {
-        categoryData.push(rawData[i]['date']);
-        values.push(rawData[i]['prices']);
-        rocs.push([i, rawData[i]['rocs']]);
+        if(rawData[i]){
+            categoryData.push(rawData[i]['date']);
+            values.push([rawData[i]['open'],rawData[i]['close'],rawData[i]['lowest'],rawData[i]['highest']]);
+            rocs.push(rawData[i]['rocs']);
+        }
+        
     }
 
     return {
@@ -18,232 +31,155 @@ function splitData(rawData) {
     };
 }
 
-
-var myChart = echarts.init(document.getElementById('main'));
-console.log("myChart");
-$.get('/stock/000002/range/21', function (rawData) {
+if(!queryObj.stockNum || !queryObj.range){
+    alert("参数错误，请增加stockNum和range数值");
+}else{
     
-    var data = splitData(rawData);
-    console.log("data",data);
-    myChart.setOption(option = {
-        backgroundColor: '#fff',
-        animation: false,
-        legend: {
-            bottom: 10,
-            left: 'center',
-            data: ['Dow-Jones index',]
-        },
-        tooltip: {
-            trigger: 'axis',
-            axisPointer: {
-                type: 'cross'
-            },
-            backgroundColor: 'rgba(245, 245, 245, 0.8)',
-            borderWidth: 1,
-            borderColor: '#ccc',
-            padding: 10,
-            textStyle: {
-                color: '#000'
-            },
-            position: function (pos, params, el, elRect, size) {
-                var obj = {top: 10};
-                obj[['left', 'right'][+(pos[0] < size.viewSize[0] / 2)]] = 30;
-                return obj;
-            }
-            // extraCssText: 'width: 170px'
-        },
+    $.get(`/stock/${queryObj.stockNum}/range/${queryObj.range}`, function (rawData) {   
+const data = splitData(rawData);
+var myChart = echarts.init(document.getElementById('main'));
+    console.log(data);
+var option = {
+    backgroundColor: '#21202D',
+    legend: {
+        data: ['日K'],
+        inactiveColor: '#777',
+        textStyle: {
+            color: '#fff'
+        }
+    },
+    tooltip: {
+        trigger: 'axis',
         axisPointer: {
-            link: {xAxisIndex: 'all'},
-            label: {
-                backgroundColor: '#777'
+            animation: false,
+            type: 'cross',
+            lineStyle: {
+                color: '#376df4',
+                width: 2,
+                opacity: 1
+            }
+        }
+    },
+    xAxis: [{
+        type: 'category',
+        data: data.categoryData,
+        boundaryGap : false,
+        axisLine: { lineStyle: { color: '#777' } },
+        min: 'dataMin',
+        max: 'dataMax',
+        axisPointer: {
+            show: true
+        }
+    }, {
+        type: 'category',
+        gridIndex: 1,
+        data: data.categoryData,
+        scale: true,
+        boundaryGap : false,
+        splitLine: {show: false},
+        axisLabel: {show: false},
+        axisTick: {show: false},
+        axisLine: { lineStyle: { color: '#777' } },
+        splitNumber: 20,
+        min: 'dataMin',
+        max: 'dataMax',
+        // axisPointer: {
+        //     type: 'shadow',
+        //     label: {show: false},
+        //     triggerTooltip: true,
+        //     handle: {
+        //         show: true,
+        //         margin: 30,
+        //         color: '#B80C00'
+        //     }
+        // }
+    }],
+    yAxis: [{
+        scale: true,
+        axisLine: { lineStyle: { color: '#8392A5' } },
+        splitLine: { show: false }
+    },{
+        scale: true,
+        gridIndex: 1,
+        splitNumber: 2,
+        axisLabel: {show: false},
+        axisLine: {show: false},
+        axisTick: {show: false},
+        splitLine: {show: false}
+    }],
+    grid: [{
+        left: 20,
+        right: 20,
+        top: 110,
+        height: 120
+    }, {
+        left: 20,
+        right: 20,
+        height: 40,
+        top: 260
+    }],
+    dataZoom: [{
+        textStyle: {
+            color: '#8392A5'
+        },
+        handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
+        handleSize: '80%',
+        xAxisIndex: [0, 1],
+        dataBackground: {
+            areaStyle: {
+                color: '#8392A5'
+            },
+            lineStyle: {
+                opacity: 0.8,
+                color: '#8392A5'
             }
         },
-        toolbox: {
-            feature: {
-                dataZoom: {
-                    yAxisIndex: false
+        handleStyle: {
+            color: '#fff',
+            shadowBlur: 3,
+            shadowColor: 'rgba(0, 0, 0, 0.6)',
+            shadowOffsetX: 2,
+            shadowOffsetY: 2
+        }
+    }, {
+        type: 'inside',
+        xAxisIndex: [0, 1],
+    }],
+    animation: false,
+    series: [
+            {
+            name: 'Rocs',
+            type: 'bar',
+            xAxisIndex: 1,
+            yAxisIndex: 1,
+            itemStyle: {
+                normal: {
+                    color: '#7fbe9e'
                 },
-                brush: {
-                    type: ['lineX', 'clear']
+                emphasis: {
+                    color: '#140'
                 }
-            }
+            },
+            data: data.rocs
         },
-        brush: {
-            xAxisIndex: 'all',
-            brushLink: 'all',
-            outOfBrush: {
-                colorAlpha: 0.1
-            }
-        },
-        visualMap: {
-            show: false,
-            seriesIndex: 5,
-            dimension: 2,
-            pieces: [{
-                value: 1,
-                color: downColor
-            }, {
-                value: -1,
-                color: upColor
-            }]
-        },
-        grid: [
-            {
-                left: '10%',
-                right: '8%',
-                height: '50%'
-            },
-            {
-                left: '10%',
-                right: '8%',
-                top: '63%',
-                height: '16%'
-            }
-        ],
-        xAxis: [
-            {
-                type: 'category',
-                data: data.categoryData,
-                scale: true,
-                boundaryGap : false,
-                axisLine: {onZero: false},
-                splitLine: {show: false},
-                splitNumber: 20,
-                min: 'dataMin',
-                max: 'dataMax',
-                axisPointer: {
-                    z: 100
+        {
+            type: 'candlestick',
+            name: '日K',
+            data: data.values,
+            itemStyle: {
+                normal: {
+                    color: '#FD1050',
+                    color0: '#0CF49B',
+                    borderColor: '#FD1050',
+                    borderColor0: '#0CF49B'
                 }
-            },
-            {
-                type: 'category',
-                gridIndex: 1,
-                data: data.categoryData,
-                scale: true,
-                boundaryGap : false,
-                axisLine: {onZero: false},
-                axisTick: {show: false},
-                splitLine: {show: false},
-                axisLabel: {show: false},
-                splitNumber: 20,
-                min: 'dataMin',
-                max: 'dataMax'
-                // axisPointer: {
-                //     label: {
-                //         formatter: function (params) {
-                //             var seriesValue = (params.seriesData[0] || {}).value;
-                //             return params.value
-                //             + (seriesValue != null
-                //                 ? '\n' + echarts.format.addCommas(seriesValue)
-                //                 : ''
-                //             );
-                //         }
-                //     }
-                // }
             }
-        ],
-        yAxis: [
-            {
-                scale: true,
-                splitArea: {
-                    show: true
-                }
-            },
-            {
-                scale: true,
-                gridIndex: 1,
-                splitNumber: 2,
-                axisLabel: {show: false},
-                axisLine: {show: false},
-                axisTick: {show: false},
-                splitLine: {show: false}
-            }
-        ],
-        dataZoom: [
-            {
-                type: 'inside',
-                xAxisIndex: [0, 1],
-                start: 98,
-                end: 100
-            },
-            {
-                show: true,
-                xAxisIndex: [0, 1],
-                type: 'slider',
-                top: '85%',
-                start: 98,
-                end: 100
-            }
-        ],
-        series: [
-            {
-                name: 'Dow-Jones index',
-                type: 'candlestick',
-                data: data.values,
-                itemStyle: {
-                    normal: {
-                        color: upColor,
-                        color0: downColor,
-                        borderColor: null,
-                        borderColor0: null
-                    }
-                },
-                tooltip: {
-                    formatter: function (param) {
-                        param = param[0];
-                        return [
-                            'Date: ' + param.name + '<hr size=1 style="margin: 3px 0">',
-                            'Open: ' + param.data[0] + '<br/>',
-                            'Close: ' + param.data[1] + '<br/>',
-                            'Lowest: ' + param.data[2] + '<br/>',
-                            'Highest: ' + param.data[3] + '<br/>'
-                        ].join('');
-                    }
-                }
-            },    
-            {
-                name: 'rocs',
-                type: 'line',
-                showSymbol: false,
-                hoverAnimation: false,
-                data: data.rocs
-            }
-        ]
-    }, true);
+        }
+    ]
+};
 
-    // myChart.on('brushSelected', renderBrushed);
+    myChart.setOption(option);
 
-    // function renderBrushed(params) {
-    //     var sum = 0;
-    //     var min = Infinity;
-    //     var max = -Infinity;
-    //     var countBySeries = [];
-    //     var brushComponent = params.brushComponents[0];
-
-    //     var rawIndices = brushComponent.series[0].rawIndices;
-    //     for (var i = 0; i < rawIndices.length; i++) {
-    //         var val = data.values[rawIndices[i]][1];
-    //         sum += val;
-    //         min = Math.min(val, min);
-    //         max = Math.max(val, max);
-    //     }
-
-    //     panel.innerHTML = [
-    //         '<h3>STATISTICS:</h3>',
-    //         'SUM of open: ' + (sum / rawIndices.length).toFixed(4) + '<br>',
-    //         'MIN of open: ' + min.toFixed(4) + '<br>',
-    //         'MAX of open: ' + max.toFixed(4) + '<br>'
-    //     ].join(' ');
-    // }
-
-    myChart.dispatchAction({
-        type: 'brush',
-        areas: [
-            {
-                brushType: 'lineX',
-                coordRange: ['2017-06-02', '2017-06-20'],
-                xAxisIndex: 0
-            }
-        ]
     });
-});
+}
+

@@ -92,7 +92,7 @@ function calculate(data,range,date){
 	let i = 0,j = 1;
 	let curDate = dateFormat(date);
 	let nowData = data[curDate];
-	let lastDate,lastData,nowPrice,lastPrice,result = {prices:null,rocs:null};
+	let lastDate,lastData,nowPrice,lastPrice,result = {rocs:null};
 	while(!nowData){
 		if(i++ >= 365) break;
 		curDate = dateFormat(new Date(reverseDate(curDate)).getTime() - 86400000);
@@ -116,7 +116,10 @@ function calculate(data,range,date){
 		
 	lastPrice = lastData ? parseFloat(lastData[2]).toFixed(2) : 0;
 	result.rocs = (nowPrice*1000-lastPrice*1000)/1000;
-	result.prices = nowPrice;
+	result.close = nowPrice;
+	result.open = nowData ? parseFloat(nowData[1]).toFixed(2) : 0;
+	result.highest = nowData ? parseFloat(nowData[4]).toFixed(2) : 0;
+	result.lowest = nowData ? parseFloat(nowData[3]).toFixed(2) : 0;
 	return result;
 }
 
@@ -142,17 +145,23 @@ module.exports = function getVolume(stockNum = "",inputObj){
 		return diff(result);
 
 		function diff(result){
-			console.log({
-					name: stockName,
-					num: stockNum,
-					prices: result.prices,
-					rocs: result.rocs,
-					date: lastDate,
-			});
+			// console.log({
+			// 		name: stockName,
+			// 		num: stockNum,
+			// 		open: result.open,
+			// 		close: result.close,
+			// 		lowest: result.lowest,
+			// 		highest: result.highest,
+			// 		rocs: result.rocs,
+			// 		date: lastDate,
+			// 	});
 			return {
 					name: stockName,
 					num: stockNum,
-					prices: result.prices,
+					open: result.open,
+					close: result.close,
+					lowest: result.lowest,
+					highest: result.highest,
 					rocs: result.rocs,
 					date: lastDate,
 				}
