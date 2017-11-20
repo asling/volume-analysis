@@ -22,3 +22,21 @@ function run(gen){
   next();
 }
 run(gen);
+
+// const startTime = new Date('10/1/2017').getTime();
+// function dateFormat(time){
+//   const year = time.getFullYear();
+//   const month = time.getMonth()+1;
+//   const day = time.getDate();
+//   // console.log(`${month}/${day}/${year}`);
+//   return `${month}/${day}/${year}`
+// }
+// const endTime = new Date(dateFormat(new Date())).getTime();
+//   let date = startTime;
+//   const diff = 24*3600000;
+//   const result = [];
+//   while(date <= endTime){
+//     console.log(dateFormat(new Date(date)))
+//     date = date + diff;
+
+//   }

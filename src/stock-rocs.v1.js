@@ -1,5 +1,5 @@
 const getROC = require("./getROC.v2");
-const startTime = new Date('10/1/2017').getTime();
+const startTime = new Date('9/1/2017').getTime();
 function dateFormat(time){
 	const year = time.getFullYear();
 	const month = time.getMonth()+1;

@@ -14,6 +14,7 @@
 	} 
 */
 const request = require("./request");
+const getNewDateStr = require('../util/getNewDateStr');
 const chalk = require('chalk');
 const year = 2017;
 // const daysGap = 3;
@@ -41,7 +42,6 @@ function dateFormat(dateObj){
 }
 
 function reverseDate(dateStr){
-
 	const year = dateStr.slice(0,4);
 	const month = dateStr.slice(4,6);
 	const day = dateStr.slice(6);
@@ -49,21 +49,28 @@ function reverseDate(dateStr){
 	return new Date(`${month}/${day}/${year}`);
 }
 
-function getLastDate(dateStr){
+function getLastDate(dateStr, force = false){
 	const date = new Date(dateStr);
-	const trueYear = date.getFullYear();
-	const trueMonth = date.getMonth()+1 <= 9 ? '0'+(date.getMonth()+1) : date.getMonth()+1;
-	const trueDate = date.getDate() <= 9 ? '0'+date.getDate() : date.getDate();
-	const todayStr = `${trueMonth}/${trueDate}/${date.getFullYear()}`;
-	const todayTime = new Date(todayStr).getTime();
+	// const trueYear = date.getFullYear();
+	// const trueMonth = date.getMonth()+1 <= 9 ? '0'+(date.getMonth()+1) : date.getMonth()+1;
+	// const trueDate = date.getDate() <= 9 ? '0'+date.getDate() : date.getDate();
+	// const todayStr = `${trueMonth}/${trueDate}/${date.getFullYear()}`;
+	// const todayTime = new Date(todayStr).getTime();
+	const todayTime = date.getTime();
 	const todayLeaveTime = todayTime + 54000000;
 	let outputTime;
-	if(date.getTime() > todayLeaveTime){
-		apiTimeStr = `${trueYear}${trueMonth}${trueDate}`;
-		outputTime = `${trueMonth}/${trueDate}/${trueYear}`;
+	if(todayTime > todayLeaveTime || force){
+		// apiTimeStr = `${trueYear}${trueMonth}${trueDate}`;
+		// outputTime = `${trueMonth}/${trueDate}/${trueYear}`;
+		apiTimeStr = dateFormat(new Date(todayTime));
+		outputTime = getNewDateStr(todayTime);
 	}else{
-		apiTimeStr = `${trueYear}${trueMonth}${trueDate-1}`;
-		outputTime = `${trueMonth}/${trueDate-1}/${trueYear}`;
+		let tmpTime = todayTime - 86400000;
+		// apiTimeStr = `${trueYear}${trueMonth}${trueDate-1}`;
+		// outputTime = `${trueMonth}/${trueDate-1}/${trueYear}`;
+		apiTimeStr = dateFormat(new Date(tmpTime));
+		outputTime = getNewDateStr(tmpTime);
+
 	}
 	return outputTime;
 }
@@ -127,6 +134,7 @@ module.exports = function getVolume(stockNum = "",inputObj){
 	const prePath = `/data/hs/kline/day/history/${year}`;
 	const range = inputObj.range;
 	const date = inputObj.date;
+	const dateForce = inputObj.dateForce;
 	const stockType = getStockType(stockNum);
 	if(stockType === -1) return false;
 
@@ -140,7 +148,8 @@ module.exports = function getVolume(stockNum = "",inputObj){
 		const stockNum = json.symbol;
 		const stockData = json.data;
 		const stockMapper = prepareStocksMapper(stockData);
-		const lastDate = getLastDate(date);
+		const lastDate = getLastDate(date,dateForce);
+		console.log('lastDate',lastDate);
 		const result = calculate(stockMapper,range,lastDate);
 		return diff(result);
 

@@ -149,7 +149,7 @@ var option = {
     series: [
             {
             name: 'Rocs',
-            type: 'bar',
+            type: 'line',
             xAxisIndex: 1,
             yAxisIndex: 1,
             itemStyle: {
