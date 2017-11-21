@@ -30,6 +30,7 @@ function run(gen){
   next();
 }
 const collectionName = 'stocks';
+const feedbackCollection = 'stockFeedback';
 
 function splitData(rawDataStr){
   if(!rawDataStr) return false;
@@ -61,9 +62,9 @@ function* gen(){
   const dbObj = yield connect("stocksProject");
   if(stocks instanceof Array && stocks.length > 0){
     for(let item of stocks){
-      console.log("item",item);
+      // console.log("item",item);
       let rawDataStr = yield getStockItemData(item);
-      console.log("rawDataStr",rawDataStr);
+      // console.log("rawDataStr",rawDataStr);
       let stockData = splitData(rawDataStr);
       // console.log("stockData",stockData);
       if(stockData && stockData.length > 0){
@@ -72,7 +73,17 @@ function* gen(){
           // console.log("dataInDb",dataInDb);
           if(!dataInDb.findByQueryDocs || dataInDb.findByQueryDocs.length <= 0){
             console.log("added");
+            detailItem.status = 'added';
+            detailItem.statusCode = '1';
             let insertResult = yield insertDocuments(dataInDb,collectionName,detailItem);
+            if(result && result.ops && result.ops.length > 0){
+              const feedbackItem = {
+                "symbol": detailItem.symbol,
+                "date": new Date().getTime(),
+                "msg": 'added',
+              };
+              let feedbackResult = yield insertDocuments(dataInDb,feedbackCollection,feedbackItem);
+            }
             console.log("insertResult",insertResult);
           }else{
             console.log("skip");

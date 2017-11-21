@@ -104,7 +104,7 @@ function calDiffAvgVolume(data,lastDate){
 			// console.log("------");
 			if(curItem){
 				sum = sum + parseFloat(curItem[5]);
-				sumToPrice = parseFloat(curItem[6]) > 0 ?  sumToPrice + parseFloat(curItem[5]) : sumToPrice - parseFloat(curItem[5]);
+				sumToPrice = parseFloat(curItem[6]) > 0 ?  sumToPrice + parseFloat(curItem[6]) : sumToPrice - parseFloat(curItem[6]);
 				
 			}
 			
@@ -175,7 +175,7 @@ function calLastAvgVolume(data, lastDate){
 			// console.log("------");
 			if(curItem){
 				sum = sum + parseFloat(curItem[5]);
-				sumToPrice = parseFloat(curItem[6]) > 0 ?  sumToPrice + parseFloat(curItem[5]) : sumToPrice - parseFloat(curItem[5]);
+				sumToPrice = parseFloat(curItem[6]) > 0 ?  sumToPrice + parseFloat(curItem[6]) : sumToPrice - parseFloat(curItem[6]);
 				console.log("curItem[5]",curItem[5]);
 				console.log("sum",sum);
 			}
