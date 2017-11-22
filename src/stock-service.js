@@ -1,9 +1,9 @@
 const stockgen = require('./stock-rocs.v1');
 
-module.exports = function(stock_num,range){
+module.exports = function(stock_num,range,page){
   return new Promise((resolve,reject) => {
-    function run(gen,stock_num,range){
-      var g = gen(stock_num,range);
+    function run(gen,stock_num,range,page){
+      var g = gen(stock_num,range,page);
       function next(data){
         var result = g.next(data);
         if (result.done){
@@ -21,7 +21,7 @@ module.exports = function(stock_num,range){
       }
        next();
     }
-    run(stockgen,stock_num,range);
+    run(stockgen,stock_num,range,page);
   });
 
 }

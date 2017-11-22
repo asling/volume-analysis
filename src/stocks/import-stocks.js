@@ -32,9 +32,7 @@ function run(gen){
 const collectionName = 'stocks';
 const feedbackCollection = 'stockFeedback';
 
-function splitData(rawDataStr){
-  if(!rawDataStr) return false;
-  const rawData = JSON.parse(rawDataStr);
+function splitData(rawData){
   if(!rawData)  return false;
   const data = [];
   // console.log(rawData.data && rawData.data.length);
@@ -64,32 +62,44 @@ function* gen(){
     for(let item of stocks){
       // console.log("item",item);
       let rawDataStr = yield getStockItemData(item);
+      let rawData = null,stockData = null;
+      if(rawDataStr){
+        rawData = JSON.parse(rawDataStr);
+        stockData = splitData(rawData);
+      }
       // console.log("rawDataStr",rawDataStr);
-      let stockData = splitData(rawDataStr);
+      
       // console.log("stockData",stockData);
-      if(stockData && stockData.length > 0){
-        for(let detailItem of stockData){
-          let dataInDb = yield findDocByQuery(dbObj,collectionName,{date: detailItem.date, symbol: detailItem.symbol});
-          // console.log("dataInDb",dataInDb);
-          if(!dataInDb.findByQueryDocs || dataInDb.findByQueryDocs.length <= 0){
-            console.log("added");
-            detailItem.status = 'added';
-            detailItem.statusCode = '1';
-            let insertResult = yield insertDocuments(dataInDb,collectionName,detailItem);
-            if(result && result.ops && result.ops.length > 0){
-              const feedbackItem = {
-                "symbol": detailItem.symbol,
-                "date": new Date().getTime(),
+      
+      if(rawData && stockData && stockData.length > 0){
+        let feedbackInDb = yield findDocByQuery(dbObj,feedbackCollection,{symbol: rawData.symbol});
+        if(!feedbackInDb.findByQueryDocs || feedbackInDb.findByQueryDocs.length <= 0){
+          for(let detailItem of stockData){
+            let dataInDb = yield findDocByQuery(dbObj,collectionName,{date: detailItem.date, symbol: detailItem.symbol});
+            // console.log("dataInDb",dataInDb);
+            if(!dataInDb.findByQueryDocs || dataInDb.findByQueryDocs.length <= 0){
+              detailItem.status = 'added';
+              detailItem.statusCode = '1';
+              let insertResult = yield insertDocuments(dataInDb,collectionName,detailItem);
+              console.log("added");
+              // console.log("insertResult",insertResult);
+            }else{
+              console.log("skip");
+            }
+          }
+
+          const feedbackItem = {
+                "symbol": rawData.symbol,
+                "date_added": new Date().getTime(),
                 "msg": 'added',
               };
-              let feedbackResult = yield insertDocuments(dataInDb,feedbackCollection,feedbackItem);
-            }
-            console.log("insertResult",insertResult);
-          }else{
-            console.log("skip");
-          }
+          let feedbackResult = yield insertDocuments(dbObj,feedbackCollection,feedbackItem);
+          console.log(chalk.blue(`complete ${rawData.symbol}`));
+
         }
+        
       }
+
     }
   }
   dbObj.db.close();

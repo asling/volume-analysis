@@ -13,7 +13,16 @@
 		rocs: [Array],
 	} 
 */
-const request = require("./request");
+// const request = require("./request");
+const { 
+  connect, 
+  findDocByQuery, 
+  insertDocuments, 
+  removeDocument, 
+  updateDocument
+} = require("../db/mongo");
+const dbName = 'stocksProject';
+const stockCollectionName = 'stocks';
 const getNewDateStr = require('../util/getNewDateStr');
 const chalk = require('chalk');
 const year = 2017;
@@ -28,7 +37,7 @@ let config = {
 function prepareStocksMapper(data){
 	const result = {};
 	data instanceof Array && data.map( v => {
-		return result[v[0]] = v;
+		return result[v['date']] = v;
 	});
 	return result;
 }
@@ -105,7 +114,7 @@ function calculate(data,range,date){
 		curDate = dateFormat(new Date(reverseDate(curDate)).getTime() - 86400000);
 		nowData = data[curDate];
 	}
-	nowPrice = nowData ? parseFloat(nowData[2]).toFixed(2) : 0;
+	nowPrice = nowData ? parseFloat(nowData['close']).toFixed(2) : 0;
 	lastDate = curDate;
 	while(j <= range){
 		i = 0;
@@ -120,63 +129,77 @@ function calculate(data,range,date){
 		}
 		j++;
 	}
-		
-	lastPrice = lastData ? parseFloat(lastData[2]).toFixed(2) : 0;
-	result.rocs = (nowPrice*1000-lastPrice*1000)/1000;
+	console.log("nowData",chalk.green(JSON.stringify(nowData)));
+	lastPrice = lastData ? parseFloat(lastData['close']).toFixed(2) : nowData ? parseFloat(nowData['open']).toFixed(2) : 0;
+	result.rocs = ((nowPrice*1000-lastPrice*1000)/1000).toFixed(2);
 	result.close = nowPrice;
-	result.open = nowData ? parseFloat(nowData[1]).toFixed(2) : 0;
-	result.highest = nowData ? parseFloat(nowData[4]).toFixed(2) : 0;
-	result.lowest = nowData ? parseFloat(nowData[3]).toFixed(2) : 0;
+	result.open = nowData ? parseFloat(nowData['open']).toFixed(2) : 0;
+	result.highest = nowData ? parseFloat(nowData['hightest']).toFixed(2) : 0;
+	result.lowest = nowData ? parseFloat(nowData['lowest']).toFixed(2) : 0;
+	result.date = nowData ? nowData['date'] : null;
 	return result;
 }
 
-module.exports = function getVolume(stockNum = "",inputObj){
-	const prePath = `/data/hs/kline/day/history/${year}`;
+module.exports = function getROC(stockNum = "",inputObj){
 	const range = inputObj.range;
 	const date = inputObj.date;
 	const dateForce = inputObj.dateForce;
-	const stockType = getStockType(stockNum);
-	if(stockType === -1) return false;
 
-	config['path'] = stockNum ? `${prePath}/${stockType}${stockNum}.json` : prePath+'/1000001.json';
-	console.log(config);
 
-	return request(config).then( v => {
-
-		const json = JSON.parse(v);
-		const stockName = json.name;
-		const stockNum = json.symbol;
-		const stockData = json.data;
-		const stockMapper = prepareStocksMapper(stockData);
-		const lastDate = getLastDate(date,dateForce);
-		console.log('lastDate',lastDate);
-		const result = calculate(stockMapper,range,lastDate);
-		return diff(result);
+	return connect(dbName).then( dbData => {
+		// console.log("dbData",dbData);
+		return findDocByQuery(dbData,stockCollectionName,{symbol:stockNum});
+	}).then( res => {
+		console.log("res",res);
+		if(res && res.findByQueryDocs.length > 0){
+			let result = {
+				data:[],
+				name: '',
+				symbol: '',
+			}
+			const docsArr = res.findByQueryDocs;
+			result.name = docsArr[0].name;
+			result.symbol = stockNum;
+			const stockMapper = prepareStocksMapper(docsArr);
+			// const lastDate = getLastDate(date,dateForce);
+			// console.log('lastDate',lastDate);
+			for(let stockItem of docsArr){
+				const resultItem = calculate(stockMapper,range,reverseDate(stockItem['date']));
+				result.data.push(diff(resultItem));
+			}
+			return result;
+		}else{
+			return false;
+		}
+		
+		
 
 		function diff(result){
-			// console.log({
-			// 		name: stockName,
-			// 		num: stockNum,
+			// console.log("nowData",chalk.red(JSON.stringify({
 			// 		open: result.open,
 			// 		close: result.close,
 			// 		lowest: result.lowest,
 			// 		highest: result.highest,
 			// 		rocs: result.rocs,
-			// 		date: lastDate,
-			// 	});
+			// 		date: result.date,
+			// 	})));
 			return {
-					name: stockName,
-					num: stockNum,
 					open: result.open,
 					close: result.close,
 					lowest: result.lowest,
 					highest: result.highest,
 					rocs: result.rocs,
-					date: lastDate,
+					date: result.date,
 				}
 		}
-
-	}, (e) =>{
-		
+		res.db.close();
+	}).catch(e => {
+		console.log('e',e);
 	});
 }
+
+
+
+
+
+

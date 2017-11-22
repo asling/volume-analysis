@@ -1,5 +1,6 @@
 const getROC = require("./getROC.v2");
-const startTime = new Date('9/1/2017').getTime();
+// const startTime = new Date('1/1/2017').getTime();
+const pageSize = 15;
 function dateFormat(time){
 	const year = time.getFullYear();
 	const month = time.getMonth()+1;
@@ -8,15 +9,18 @@ function dateFormat(time){
 	return `${month}/${day}/${year}`
 }
 const endTime = new Date(dateFormat(new Date())).getTime();
-module.exports = function*(stock_num,range){
-	let date = startTime;
-	const diff = 24*3600000;
-	const result = [];
-	while(date <= endTime){
-		const item = yield getROC(stock_num,{range,date});
-		result.push(item);
-		date = date + diff;
-	}
+module.exports = function*(stock_num,range,page){
+	let result = {},dict = {};
+	const item = yield getROC(stock_num,{range});
+
+	const dataNumbers = item && item.data && item.data.length > 0 ? item.data.length : 0;
+	result.totalNum = dataNumbers;
+	result.page = page;
+	result.pageSize = pageSize;
+	result.name = item.name;
+	result.symbol = item.symbol;
+	result.data = item.data.slice((parseInt(page)-1)*pageSize,parseInt(page)*pageSize);	
+	console.log((parseInt(page)-1)*pageSize);
 	return result;
 }
 
