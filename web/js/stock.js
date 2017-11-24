@@ -11,6 +11,24 @@ function random(){
     }
     return p * Math.round(Math.random()*5);
 }
+
+function calculateMA(dayCount, data) {
+    var result = [];
+    for (var i = 0, len = data.values.length; i < len; i++) {
+        if (i < dayCount) {
+            result.push('-');
+            continue;
+        }
+        var sum = 0;
+        for (var j = 0; j < dayCount; j++) {
+            sum += parseFloat(data.values[i - j][1]);
+        }
+        result.push(+(sum / dayCount).toFixed(3));
+    }
+    // console.log(result);
+    return result;
+}
+
 function splitData(oldData,rawData) {
     var categoryData = [];
     var values = [];
@@ -56,7 +74,7 @@ function renderChart(myChart,data){
     var option = {
                 backgroundColor: '#21202D',
                 legend: {
-                    data: ['日K'],
+                    data: ['日K','MA5', 'MA10', 'MA20', 'MA30','MA60'],
                     inactiveColor: '#777',
                     textStyle: {
                         color: '#fff'
@@ -129,7 +147,7 @@ function renderChart(myChart,data){
                 }, {
                     left: 20,
                     right: 20,
-                    height: 40,
+                    height: 100,
                     top: 260
                 }],
                 dataZoom: [{
@@ -188,7 +206,52 @@ function renderChart(myChart,data){
                                 borderColor0: '#0CF49B'
                             }
                         }
-                    }
+                    },
+                    {
+                        name: 'MA5',
+                        type: 'line',
+                        data: calculateMA(5, data),
+                        smooth: true,
+                        lineStyle: {
+                            normal: {opacity: 0.5}
+                        }
+                    },
+                    {
+                        name: 'MA10',
+                        type: 'line',
+                        data: calculateMA(10, data),
+                        smooth: true,
+                        lineStyle: {
+                            normal: {opacity: 0.5}
+                        }
+                    },
+                    {
+                        name: 'MA20',
+                        type: 'line',
+                        data: calculateMA(20, data),
+                        smooth: true,
+                        lineStyle: {
+                            normal: {opacity: 0.5}
+                        }
+                    },
+                    {
+                        name: 'MA30',
+                        type: 'line',
+                        data: calculateMA(30, data),
+                        smooth: true,
+                        lineStyle: {
+                            normal: {opacity: 0.5}
+                        }
+                    },
+                    {
+                        name: 'MA60',
+                        type: 'line',
+                        data: calculateMA(60, data),
+                        smooth: true,
+                        lineStyle: {
+                            normal: {opacity: 0.5}
+                        }
+                    },
                 ]
             };
 
@@ -219,8 +282,8 @@ if(!queryObj.stockNum || !queryObj.range){
 
 
     while(page<=totalPage){
-        console.log("page",page);
-        console.log("totalPage1",totalPage);
+        // console.log("page",page);
+        // console.log("totalPage1",totalPage);
         $.ajax(`/stock/${queryObj.stockNum}/range/${queryObj.range}/page/${page}`, {
             async: false,
             dataType: 'json',

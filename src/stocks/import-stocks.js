@@ -73,7 +73,21 @@ function* gen(){
       
       if(rawData && stockData && stockData.length > 0){
         let feedbackInDb = yield findDocByQuery(dbObj,feedbackCollection,{symbol: rawData.symbol});
+        let dateTime = new Date().getTime();
+        console.log("dateTime",dateTime);
+        let feedbackStatus,updateStatus = false;
         if(!feedbackInDb.findByQueryDocs || feedbackInDb.findByQueryDocs.length <= 0){
+          feedbackStatus = true;
+        }else{
+          // if(feedbackInDb.findByQueryDocs[0] && parseInt(dateTime) > parseInt(feedbackInDb.findByQueryDocs[0]['date_added'])){
+          //   feedbackStatus = true;
+          //   updateStatus = true;
+          // }else{
+            feedbackStatus = false;
+          // }
+        }
+        console.log("updateStatus",updateStatus);
+        if(feedbackStatus){
           for(let detailItem of stockData){
             let dataInDb = yield findDocByQuery(dbObj,collectionName,{date: detailItem.date, symbol: detailItem.symbol});
             // console.log("dataInDb",dataInDb);
@@ -87,14 +101,25 @@ function* gen(){
               console.log("skip");
             }
           }
-
-          const feedbackItem = {
+          if(updateStatus){
+            const feedbackItem = {
+                "symbol": rawData.symbol,
+                "date_added": dateTime,
+                "msg": 'updated',
+            };
+            let feedbackResult = yield updateDocument(dbObj,feedbackCollection,{symbol: rawData.symbol},feedbackItem);
+            console.log(chalk.blue(`updated complete ${rawData.symbol}`));
+          }else{
+            const feedbackItem = {
                 "symbol": rawData.symbol,
                 "date_added": new Date().getTime(),
                 "msg": 'added',
-              };
-          let feedbackResult = yield insertDocuments(dbObj,feedbackCollection,feedbackItem);
-          console.log(chalk.blue(`complete ${rawData.symbol}`));
+            };
+            let feedbackResult = yield insertDocuments(dbObj,feedbackCollection,feedbackItem);
+            console.log(chalk.blue(`added complete ${rawData.symbol}`));
+          }
+          
+          
 
         }
         
