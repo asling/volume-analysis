@@ -1,0 +1,20 @@
+You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+TypeError: Cannot read property 'name' of undefined
+    at module.exports (/Users/chenyuwen/Desktop/learning/stock-spider/src/stock-rocs.v1.js:20:21)
+    at module.exports.next (<anonymous>)
+    at next (/Users/chenyuwen/Desktop/learning/stock-spider/src/stock-service.js:8:24)
+    at /Users/chenyuwen/Desktop/learning/stock-spider/src/stock-service.js:15:14
+    at <anonymous>
+    at process._tickDomainCallback (internal/process/next_tick.js:228:7)
+You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+TypeError: Cannot read property 'name' of undefined
+    at module.exports (/Users/chenyuwen/Desktop/learning/stock-spider/src/stock-rocs.v1.js:20:21)
+    at module.exports.next (<anonymous>)
+    at next (/Users/chenyuwen/Desktop/learning/stock-spider/src/stock-service.js:8:24)
+    at /Users/chenyuwen/Desktop/learning/stock-spider/src/stock-service.js:15:14
+    at <anonymous>
+    at process._tickDomainCallback (internal/process/next_tick.js:228:7)
+(node:9082) UnhandledPromiseRejectionWarning: Unhandled promise rejection (rejection id: 2): TypeError: Cannot read property 'name' of undefined
+(node:9082) [DEP0018] DeprecationWarning: Unhandled promise rejections are deprecated. In the future, promise rejections that are not handled will terminate the Node.js process with a non-zero exit code.
+(node:9082) UnhandledPromiseRejectionWarning: Unhandled promise rejection (rejection id: 3): TypeError: Cannot read property 'name' of undefined
+(node:9082) UnhandledPromiseRejectionWarning: Unhandled promise rejection (rejection id: 4): TypeError: Cannot read property 'name' of undefined

@@ -13,14 +13,17 @@ module.exports = function*(stock_num,range,page){
 	let result = {},dict = {};
 	const item = yield getROC(stock_num,{range});
 
-	const dataNumbers = item && item.data && item.data.length > 0 ? item.data.length : 0;
-	result.totalNum = dataNumbers;
-	result.page = page;
-	result.pageSize = pageSize;
-	result.name = item.name;
-	result.symbol = item.symbol;
-	result.data = item.data.slice((parseInt(page)-1)*pageSize,parseInt(page)*pageSize);	
-	console.log((parseInt(page)-1)*pageSize);
+	if(item){
+		const dataNumbers = item.data && item.data.length > 0 ? item.data.length : 0;
+		result.totalNum = dataNumbers;
+		result.page = page;
+		result.pageSize = pageSize;
+		result.name = item.name;
+		result.symbol = item.symbol;
+		result.data = item.data.slice((parseInt(page)-1)*pageSize,parseInt(page)*pageSize);	
+		console.log((parseInt(page)-1)*pageSize);
+	}
+	
 	return result;
 }
 

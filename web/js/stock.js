@@ -33,11 +33,14 @@ function splitData(oldData,rawData) {
     var categoryData = [];
     var values = [];
     var rocs = [];
+    var volumes = [];
     for (var i = 0; i < rawData.length; i++) {
         if(rawData[i]){
             categoryData.push(rawData[i]['date']);
             values.push([rawData[i]['open'],rawData[i]['close'],rawData[i]['lowest'],rawData[i]['highest']]);
             rocs.push(rawData[i]['rocs']);
+            volumes.push([rawData[i]['date'],rawData[i]['volumes'],rawData[i]['close'] >= rawData[i]['open'] ? 1 : -1 ]);
+            // volumes.push(rawData[i]['volumes']);
         }
         
     }
@@ -54,13 +57,18 @@ function splitData(oldData,rawData) {
             rocs: [
                 ...oldData.rocs,
                 ...rocs,
+            ],
+            volumes: [
+                ...oldData.volumes,
+                ...volumes,
             ]
         };
     }else{
         return {
-            categoryData: categoryData,
-            values: values,
-            rocs: rocs
+            categoryData,
+            values,
+            rocs,
+            volumes,
         };
     }
     
@@ -71,6 +79,7 @@ function initChart(){
 }
 
 function renderChart(myChart,data){
+    console.log("data",data);
     var option = {
                 backgroundColor: '#21202D',
                 legend: {
@@ -91,6 +100,18 @@ function renderChart(myChart,data){
                             opacity: 1
                         }
                     }
+                },
+                visualMap: {
+                    show: false,
+                    seriesIndex: 1,
+                    dimension: 2,
+                    pieces: [{
+                        value: 1,
+                        color: downColor
+                    }, {
+                        value: -1,
+                        color: upColor
+                    }]
                 },
                 xAxis: [{
                     type: 'category',
@@ -115,17 +136,22 @@ function renderChart(myChart,data){
                     splitNumber: 20,
                     min: 'dataMin',
                     max: 'dataMax',
-                    // axisPointer: {
-                    //     type: 'shadow',
-                    //     label: {show: false},
-                    //     triggerTooltip: true,
-                    //     handle: {
-                    //         show: true,
-                    //         margin: 30,
-                    //         color: '#B80C00'
-                    //     }
-                    // }
-                }],
+                },
+                {
+                    type: 'category',
+                    gridIndex: 2,
+                    data: data.categoryData,
+                    scale: true,
+                    boundaryGap : false,
+                    splitLine: {show: false},
+                    axisLabel: {show: false},
+                    axisTick: {show: false},
+                    axisLine: { lineStyle: { color: '#777' } },
+                    splitNumber: 20,
+                    min: 'dataMin',
+                    max: 'dataMax',
+                }
+                ],
                 yAxis: [{
                     scale: true,
                     axisLine: { lineStyle: { color: '#8392A5' } },
@@ -133,6 +159,14 @@ function renderChart(myChart,data){
                 },{
                     scale: true,
                     gridIndex: 1,
+                    splitNumber: 2,
+                    axisLabel: {show: false},
+                    axisLine: {show: false},
+                    axisTick: {show: false},
+                    splitLine: {show: false}
+                },{
+                    scale: true,
+                    gridIndex: 2,
                     splitNumber: 2,
                     axisLabel: {show: false},
                     axisLine: {show: false},
@@ -149,6 +183,11 @@ function renderChart(myChart,data){
                     right: 20,
                     height: 100,
                     top: 260
+                }, {
+                    left: 20,
+                    right: 20,
+                    height: 120,
+                    top: 390
                 }],
                 dataZoom: [{
                     textStyle: {
@@ -156,7 +195,7 @@ function renderChart(myChart,data){
                     },
                     handleIcon: 'M10.7,11.9v-1.3H9.3v1.3c-4.9,0.3-8.8,4.4-8.8,9.4c0,5,3.9,9.1,8.8,9.4v1.3h1.3v-1.3c4.9-0.3,8.8-4.4,8.8-9.4C19.5,16.3,15.6,12.2,10.7,11.9z M13.3,24.4H6.7V23h6.6V24.4z M13.3,19.6H6.7v-1.4h6.6V19.6z',
                     handleSize: '80%',
-                    xAxisIndex: [0, 1],
+                    xAxisIndex: [0, 1,2],
                     dataBackground: {
                         areaStyle: {
                             color: '#8392A5'
@@ -179,7 +218,7 @@ function renderChart(myChart,data){
                 }],
                 animation: false,
                 series: [
-                        {
+                    {
                         name: 'Rocs',
                         type: 'line',
                         xAxisIndex: 1,
@@ -193,6 +232,13 @@ function renderChart(myChart,data){
                             }
                         },
                         data: data.rocs
+                    },
+                    {
+                        name: 'Volumes',
+                        type: 'bar',
+                        xAxisIndex: 2,
+                        yAxisIndex: 2,
+                        data: data.volumes
                     },
                     {
                         type: 'candlestick',

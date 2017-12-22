@@ -1,0 +1,22 @@
+You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+TypeError: String.prototype.match called on null or undefined
+    at match (native)
+    at getStockType (/Users/chenyuwen/Desktop/learning/stock-spider/util/getStockType.js:3:11)
+    at module.exports (/Users/chenyuwen/Desktop/learning/stock-spider/src/stocks/getStockItemData.js:10:20)
+    at gen (/Users/chenyuwen/Desktop/learning/stock-spider/src/stocks/import-stocks.js:64:30)
+    at gen.next (<anonymous>)
+    at next (/Users/chenyuwen/Desktop/learning/stock-spider/src/stocks/import-stocks.js:16:20)
+    at /Users/chenyuwen/Desktop/learning/stock-spider/src/stocks/import-stocks.js:23:8
+    at <anonymous>
+    at process._tickDomainCallback (internal/process/next_tick.js:228:7)
+You have triggered an unhandledRejection, you may have forgotten to catch a Promise rejection:
+TypeError: String.prototype.match called on null or undefined
+    at match (native)
+    at getStockType (/Users/chenyuwen/Desktop/learning/stock-spider/util/getStockType.js:3:11)
+    at module.exports (/Users/chenyuwen/Desktop/learning/stock-spider/src/stocks/getStockItemData.js:10:20)
+    at gen (/Users/chenyuwen/Desktop/learning/stock-spider/src/stocks/import-stocks.js:64:30)
+    at gen.next (<anonymous>)
+    at next (/Users/chenyuwen/Desktop/learning/stock-spider/src/stocks/import-stocks.js:16:20)
+    at /Users/chenyuwen/Desktop/learning/stock-spider/src/stocks/import-stocks.js:23:8
+    at <anonymous>
+    at process._tickDomainCallback (internal/process/next_tick.js:228:7)

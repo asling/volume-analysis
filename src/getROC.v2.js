@@ -137,6 +137,7 @@ function calculate(data,range,date){
 	result.highest = nowData ? parseFloat(nowData['hightest']).toFixed(2) : 0;
 	result.lowest = nowData ? parseFloat(nowData['lowest']).toFixed(2) : 0;
 	result.date = nowData ? nowData['date'] : null;
+	result.volumes = nowData ? nowData['volumes'] : 0;
 	return result;
 }
 
@@ -190,6 +191,7 @@ module.exports = function getROC(stockNum = "",inputObj){
 					highest: result.highest,
 					rocs: result.rocs,
 					date: result.date,
+					volumes: result.volumes,
 				}
 		}
 		res.db.close();
